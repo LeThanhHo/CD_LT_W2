@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import orderService from "../../services/orderService";
-import { formatVND } from "../../components/ProductCard";
+import { formatVND, resolveImageUrl } from "../../components/ProductCard";
 import Loader from "../../components/Loader";
 
 const statusStyles = {
@@ -126,7 +126,7 @@ export default function OrderManagementPage() {
                     {order.orderDetails.map((d) => (
                       <div key={d.id} className="flex items-center gap-3">
                         <img
-                          src={d.productImage || "https://placehold.co/60x60?text=Bike"}
+                          src={resolveImageUrl(d.productImage) || "https://placehold.co/60x60?text=Bike"}
                           alt=""
                           className="w-12 h-12 object-cover rounded-md"
                         />

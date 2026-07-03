@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
 import orderService from "../services/orderService";
 import { fetchCart, clearCartState } from "../context/cartSlice";
-import { formatVND } from "../components/ProductCard";
+import { formatVND, resolveImageUrl } from "../components/ProductCard";
 import Loader from "../components/Loader";
 
 const paymentMethods = [
@@ -149,7 +149,7 @@ export default function CheckoutPage() {
             {items.map((item) => (
               <div key={item.id} className="flex items-center gap-3">
                 <img
-                  src={item.productImage || "https://placehold.co/60x60?text=Bike"}
+                  src={resolveImageUrl(item.productImage) || "https://placehold.co/60x60?text=Bike"}
                   alt=""
                   className="w-12 h-12 object-cover rounded-md"
                 />

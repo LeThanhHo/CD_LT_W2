@@ -62,7 +62,9 @@ export default function Header() {
             <Link to="/products" className="text-slate-300 hover:text-lime-400 transition-colors duration-200">
               Sản phẩm
             </Link>
-            
+            <Link to="/blog" className="text-slate-300 hover:text-lime-400 transition-colors duration-200">
+              Tin tức
+            </Link>
             {/* Cart Icon Badge */}
             <Link to="/cart" className="relative text-slate-300 hover:text-lime-400 transition-colors duration-200 flex items-center gap-1.5 group">
               <span>Giỏ hàng</span>
@@ -150,6 +152,9 @@ export default function Header() {
           <div className="space-y-1 font-medium text-slate-300">
             <Link to="/products" onClick={() => setMenuOpen(false)} className="block py-2 px-3 rounded-lg hover:bg-white/5 active:text-lime-400 transition-all">
               🚲 Sản phẩm
+            </Link>
+            <Link to="/blog" className="text-slate-300 hover:text-lime-400 transition-colors duration-200">
+              Tin tức
             </Link>
             <Link to="/cart" onClick={() => setMenuOpen(false)} className="block py-2 px-3 rounded-lg hover:bg-white/5 active:text-lime-400 flex items-center justify-between transition-all">
               <span>🛒 Giỏ hàng</span>

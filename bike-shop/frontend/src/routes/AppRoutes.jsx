@@ -15,6 +15,8 @@ import CheckoutPage from "../pages/CheckoutPage";
 import OrderHistoryPage from "../pages/OrderHistoryPage";
 import LoginPage from "../pages/LoginPage";
 import RegisterPage from "../pages/RegisterPage";
+import BlogPage from "../pages/BlogPage";
+import PostDetailPage from "../pages/PostDetailPage";
 
 import DashboardPage from "../pages/admin/DashboardPage";
 import ProductManagementPage from "../pages/admin/ProductManagementPage";
@@ -22,7 +24,7 @@ import CategoryManagementPage from "../pages/admin/CategoryManagementPage";
 import BrandManagementPage from "../pages/admin/BrandManagementPage";
 import OrderManagementPage from "../pages/admin/OrderManagementPage";
 import UserManagementPage from "../pages/admin/UserManagementPage";
-
+import PostManagement from "../pages/admin/PostManagement";
 function NotFoundPage() {
   return (
     <div className="min-h-[60vh] flex flex-col items-center justify-center text-center px-4">
@@ -52,7 +54,8 @@ export default function AppRoutes() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/cart" element={<CartPage />} />
-
+        <Route path="/blog" element={<BlogPage />} />
+        <Route path="/blog/:slug" element={<PostDetailPage />} />
         <Route
           path="/checkout"
           element={
@@ -88,6 +91,7 @@ export default function AppRoutes() {
         <Route path="brands" element={<BrandManagementPage />} />
         <Route path="orders" element={<OrderManagementPage />} />
         <Route path="users" element={<UserManagementPage />} />
+        <Route path="/admin/posts" element={<PostManagement />} />
       </Route>
     </Routes>
   );

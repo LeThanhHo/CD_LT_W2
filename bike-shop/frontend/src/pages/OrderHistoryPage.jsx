@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { toast } from "react-toastify";
 import orderService from "../services/orderService";
-import { formatVND } from "../components/ProductCard";
+import { formatVND, resolveImageUrl } from "../components/ProductCard";
 import Loader from "../components/Loader";
 
 const statusStyles = {
@@ -104,15 +104,28 @@ export default function OrderHistoryPage() {
                     {order.orderDetails.map((d) => (
                       <div key={d.id} className="flex items-center gap-3">
                         <img
-                          src={d.productImage || "https://placehold.co/60x60?text=Bike"}
+                          src={resolveImageUrl(d.productImage) || "https://placehold.co/60x60?text=Bike"}
                           alt=""
                           className="w-12 h-12 object-cover rounded-md"
                         />
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm text-ink line-clamp-1">{d.productName}</p>
+                          <Link
+                            to={`/products/${d.productId}`}
+                            className="text-sm text-ink font-medium line-clamp-1 hover:text-ember"
+                          >
+                            {d.productName}
+                          </Link>
                           <p className="text-xs text-steel">SL: {d.quantity}</p>
                         </div>
                         <p className="text-sm font-semibold text-ink">{formatVND(d.price * d.quantity)}</p>
+                        {order.status === "COMPLETED" && (
+                          <Link
+                            to={`/products/${d.productId}#reviews`}
+                            className="text-xs font-semibold text-ember border border-ember rounded-md px-3 py-1.5 hover:bg-orange-50 shrink-0"
+                          >
+                            Đánh giá
+                          </Link>
+                        )}
                       </div>
                     ))}
                   </div>

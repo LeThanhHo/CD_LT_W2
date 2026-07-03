@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import brandService from "../../services/brandService";
+import uploadService from "../../services/uploadService";
+import { resolveImageUrl } from "../../components/ProductCard";
 import Loader from "../../components/Loader";
 
 const emptyForm = { name: "", logo: "" };
@@ -12,6 +14,7 @@ export default function BrandManagementPage() {
   const [editingId, setEditingId] = useState(null);
   const [form, setForm] = useState(emptyForm);
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
 
   const loadBrands = async () => {
     setLoading(true);
@@ -37,6 +40,22 @@ export default function BrandManagementPage() {
     setEditingId(b.id);
     setForm({ name: b.name, logo: b.logo || "" });
     setShowModal(true);
+  };
+
+  const handleLogoSelect = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    try {
+      const res = await uploadService.uploadImage(file);
+      setForm((prev) => ({ ...prev, logo: res.data.url }));
+      toast.success("Đã tải logo lên thành công");
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Không thể tải logo lên");
+    } finally {
+      setUploading(false);
+      e.target.value = "";
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -99,7 +118,7 @@ export default function BrandManagementPage() {
                 <tr key={b.id}>
                   <td className="px-4 py-3">
                     <img
-                      src={b.logo || "https://placehold.co/40x40?text=Logo"}
+                      src={resolveImageUrl(b.logo) || "https://placehold.co/40x40?text=Logo"}
                       alt=""
                       className="w-8 h-8 object-contain"
                     />
@@ -137,13 +156,30 @@ export default function BrandManagementPage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-ink mb-1">Link logo</label>
-                <input
-                  value={form.logo}
-                  onChange={(e) => setForm({ ...form, logo: e.target.value })}
-                  placeholder="/images/brands/..."
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
-                />
+                <label className="block text-sm font-medium text-ink mb-1">Logo hãng xe</label>
+                <div className="flex items-center gap-4">
+                  <div className="w-16 h-16 rounded-md border border-gray-200 bg-gray-50 overflow-hidden shrink-0 flex items-center justify-center">
+                    {form.logo ? (
+                      <img
+                        src={resolveImageUrl(form.logo)}
+                        alt=""
+                        className="w-full h-full object-contain"
+                      />
+                    ) : (
+                      <span className="text-xs text-steel">Chưa có</span>
+                    )}
+                  </div>
+                  <div className="flex-1">
+                    <input
+                      type="file"
+                      accept="image/png,image/jpeg,image/jpg,image/webp,image/gif"
+                      onChange={handleLogoSelect}
+                      disabled={uploading}
+                      className="w-full text-sm text-steel file:mr-3 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-ink file:text-white hover:file:bg-black file:cursor-pointer disabled:opacity-60"
+                    />
+                    {uploading && <p className="text-xs text-steel mt-1">Đang tải logo lên...</p>}
+                  </div>
+                </div>
               </div>
               <div className="flex justify-end gap-3 pt-2">
                 <button
@@ -155,7 +191,7 @@ export default function BrandManagementPage() {
                 </button>
                 <button
                   type="submit"
-                  disabled={saving}
+                  disabled={saving || uploading}
                   className="bg-ember text-white text-sm font-semibold px-5 py-2 rounded-md hover:brightness-95 disabled:opacity-60"
                 >
                   {saving ? "Đang lưu..." : "Lưu"}

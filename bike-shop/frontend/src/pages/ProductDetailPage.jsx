@@ -1,17 +1,18 @@
 import React, { useEffect, useState, useCallback } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, useLocation, Link } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
 import productService from "../services/productService";
 import reviewService from "../services/reviewService";
 import { addToCart } from "../context/cartSlice";
-import { formatVND } from "../components/ProductCard";
+import { formatVND, resolveImageUrl } from "../components/ProductCard";
 import Loader from "../components/Loader";
 
 export default function ProductDetailPage() {
   const { id } = useParams();
+  const location = useLocation();
   const dispatch = useDispatch();
-  const { isAuthenticated } = useSelector((state) => state.auth);
+  const { isAuthenticated, user } = useSelector((state) => state.auth);
 
   const [product, setProduct] = useState(null);
   const [reviews, setReviews] = useState([]);
@@ -20,24 +21,51 @@ export default function ProductDetailPage() {
   const [loading, setLoading] = useState(true);
   const [reviewForm, setReviewForm] = useState({ rating: 5, comment: "" });
   const [submittingReview, setSubmittingReview] = useState(false);
+  const [canReview, setCanReview] = useState(false);
 
   const loadReviews = useCallback(async () => {
     const res = await reviewService.getByProduct(id);
     setReviews(res.data);
+    return res.data;
   }, [id]);
+
+  const loadCanReview = useCallback(async () => {
+    if (!isAuthenticated) {
+      setCanReview(false);
+      return;
+    }
+    try {
+      const res = await reviewService.canReview(id);
+      setCanReview(res.data);
+    } catch (err) {
+      console.error("Không thể kiểm tra điều kiện đánh giá:", err);
+      setCanReview(false);
+    }
+  }, [id, isAuthenticated]);
 
   useEffect(() => {
     setLoading(true);
-    Promise.all([productService.getById(id), reviewService.getByProduct(id)])
-      .then(([p, r]) => {
+    Promise.all([productService.getById(id), loadReviews(), loadCanReview()])
+      .then(([p]) => {
         setProduct(p.data);
         setActiveImage(p.data.image);
-        setReviews(r.data);
       })
       .finally(() => setLoading(false));
     setQuantity(1);
-    window.scrollTo(0, 0);
-  }, [id]);
+    if (location.hash !== "#reviews") {
+      window.scrollTo(0, 0);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id, isAuthenticated]);
+
+  useEffect(() => {
+    if (!loading && location.hash === "#reviews") {
+      const el = document.getElementById("reviews");
+      if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }, [loading, location.hash]);
+
+  const alreadyReviewed = reviews.some((r) => r.userId === user?.id);
 
   const handleAddToCart = async () => {
     if (!isAuthenticated) {
@@ -63,6 +91,7 @@ export default function ProductDetailPage() {
       await reviewService.create(id, reviewForm);
       toast.success("Cảm ơn bạn đã đánh giá!");
       setReviewForm({ rating: 5, comment: "" });
+      setCanReview(false);
       await loadReviews();
     } catch (err) {
       toast.error(err.response?.data?.message || "Không thể gửi đánh giá");
@@ -90,7 +119,7 @@ export default function ProductDetailPage() {
         <div>
           <div className="aspect-square bg-gray-100 rounded-xl overflow-hidden">
             <img
-              src={activeImage || "https://placehold.co/600x600?text=Bike"}
+              src={resolveImageUrl(activeImage) || "https://placehold.co/600x600?text=Bike"}
               alt={product.name}
               className="w-full h-full object-cover"
             />
@@ -105,7 +134,7 @@ export default function ProductDetailPage() {
                     activeImage === img ? "border-ember" : "border-transparent"
                   }`}
                 >
-                  <img src={img} alt="" className="w-full h-full object-cover" />
+                  <img src={resolveImageUrl(img)} alt="" className="w-full h-full object-cover" />
                 </button>
               ))}
             </div>
@@ -167,38 +196,61 @@ export default function ProductDetailPage() {
       </div>
 
       {/* Reviews */}
-      <section className="mt-16 max-w-3xl">
+      <section id="reviews" className="mt-16 max-w-3xl">
         <h2 className="font-display text-xl text-ink mb-6">Đánh giá sản phẩm</h2>
 
-        <form onSubmit={handleReviewSubmit} className="bg-white border border-gray-200 rounded-xl p-5 mb-8">
-          <p className="font-semibold text-sm text-ink mb-2">Viết đánh giá của bạn</p>
-          <div className="flex items-center gap-1 mb-3">
-            {[1, 2, 3, 4, 5].map((star) => (
-              <button
-                type="button"
-                key={star}
-                onClick={() => setReviewForm({ ...reviewForm, rating: star })}
-                className={`text-2xl ${star <= reviewForm.rating ? "text-amber-500" : "text-gray-300"}`}
-              >
-                ★
-              </button>
-            ))}
+        {isAuthenticated && canReview && (
+          <form onSubmit={handleReviewSubmit} className="bg-white border border-gray-200 rounded-xl p-5 mb-8">
+            <p className="font-semibold text-sm text-ink mb-2">Viết đánh giá của bạn</p>
+            <div className="flex items-center gap-1 mb-3">
+              {[1, 2, 3, 4, 5].map((star) => (
+                <button
+                  type="button"
+                  key={star}
+                  onClick={() => setReviewForm({ ...reviewForm, rating: star })}
+                  className={`text-2xl ${star <= reviewForm.rating ? "text-amber-500" : "text-gray-300"}`}
+                >
+                  ★
+                </button>
+              ))}
+            </div>
+            <textarea
+              value={reviewForm.comment}
+              onChange={(e) => setReviewForm({ ...reviewForm, comment: e.target.value })}
+              placeholder="Chia sẻ trải nghiệm của bạn về sản phẩm..."
+              rows={3}
+              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm mb-3 focus:outline-none focus:ring-2 focus:ring-ember"
+            />
+            <button
+              type="submit"
+              disabled={submittingReview}
+              className="bg-ink text-white text-sm font-semibold px-5 py-2 rounded-md hover:bg-black disabled:opacity-60"
+            >
+              {submittingReview ? "Đang gửi..." : "Gửi đánh giá"}
+            </button>
+          </form>
+        )}
+
+        {!isAuthenticated && (
+          <div className="bg-white border border-gray-200 rounded-xl p-5 mb-8 text-sm text-steel">
+            <Link to="/login" className="text-ember font-semibold hover:underline">
+              Đăng nhập
+            </Link>{" "}
+            và mua sản phẩm này để có thể để lại đánh giá.
           </div>
-          <textarea
-            value={reviewForm.comment}
-            onChange={(e) => setReviewForm({ ...reviewForm, comment: e.target.value })}
-            placeholder="Chia sẻ trải nghiệm của bạn về sản phẩm..."
-            rows={3}
-            className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm mb-3 focus:outline-none focus:ring-2 focus:ring-ember"
-          />
-          <button
-            type="submit"
-            disabled={submittingReview}
-            className="bg-ink text-white text-sm font-semibold px-5 py-2 rounded-md hover:bg-black disabled:opacity-60"
-          >
-            {submittingReview ? "Đang gửi..." : "Gửi đánh giá"}
-          </button>
-        </form>
+        )}
+
+        {isAuthenticated && !canReview && alreadyReviewed && (
+          <div className="bg-white border border-gray-200 rounded-xl p-5 mb-8 text-sm text-steel">
+            Bạn đã đánh giá sản phẩm này. Cảm ơn bạn đã chia sẻ trải nghiệm!
+          </div>
+        )}
+
+        {isAuthenticated && !canReview && !alreadyReviewed && (
+          <div className="bg-white border border-gray-200 rounded-xl p-5 mb-8 text-sm text-steel">
+            Bạn cần mua và nhận sản phẩm này thành công trước khi có thể đánh giá.
+          </div>
+        )}
 
         {reviews.length === 0 ? (
           <p className="text-steel text-sm">Chưa có đánh giá nào cho sản phẩm này.</p>

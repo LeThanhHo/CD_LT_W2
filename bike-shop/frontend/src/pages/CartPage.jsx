@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
 import { fetchCart, updateCartItem, removeCartItem } from "../context/cartSlice";
-import { formatVND } from "../components/ProductCard";
+import { formatVND, resolveImageUrl } from "../components/ProductCard";
 import Loader from "../components/Loader";
 
 export default function CartPage() {
@@ -60,7 +60,7 @@ export default function CartPage() {
             {items.map((item) => (
               <div key={item.id} className="flex items-center gap-4 p-4">
                 <img
-                  src={item.productImage || "https://placehold.co/100x100?text=Bike"}
+                  src={resolveImageUrl(item.productImage) || "https://placehold.co/100x100?text=Bike"}
                   alt={item.productName}
                   className="w-20 h-20 object-cover rounded-md shrink-0"
                 />
