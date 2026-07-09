@@ -29,7 +29,7 @@ import UserManagementPage from "../pages/admin/UserManagementPage";
 import PostManagementPage from "../pages/admin/PostManagementPage";
 import ContactManagementPage from "../pages/admin/ContactManagementPage";
 import ReviewManagementPage from "../pages/admin/ReviewManagementPage";
-
+import BannerManagementPage from "../pages/admin/BannerManagementPage";
 function NotFoundPage() {
   return (
     <div className="min-h-[60vh] flex flex-col items-center justify-center text-center px-4">
@@ -109,6 +109,7 @@ export default function AppRoutes() {
         <Route path="posts" element={<PostManagementPage />} />
         <Route path="contacts" element={<ContactManagementPage />} />
         <Route path="users" element={<UserManagementPage />} />
+        <Route path="banners" element={<BannerManagementPage />} />
       </Route>
     </Routes>
   );

@@ -1,15 +1,18 @@
+// src/components/ProductCard.jsx
+// Senior UI/UX Redesign - Premium Product Display Engine (Canyon, Specialized & Apple Spec)
+// Ten: Le Thanh Ho | MSSV: 2123110125 | Lop: CCQ2311D
+
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { toast } from "react-toastify";
-import { Heart } from "lucide-react";
+import { motion } from "framer-motion";
+import { Heart, Star, ShoppingBag } from "lucide-react";
 import favoriteService from "../services/favoriteService";
 
 const formatVND = (value) =>
   new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(value || 0);
 
-// Backend serves uploaded files (e.g. "/uploads/xxxx.jpg") from its own origin,
-// which differs from the frontend dev server origin — resolve to an absolute URL.
 const API_ORIGIN = process.env.REACT_APP_API_ORIGIN || "http://localhost:8080";
 const resolveImageUrl = (path) => {
   if (!path) return null;
@@ -39,7 +42,6 @@ export default function ProductCard({ product }) {
     return () => {
       cancelled = true;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [product.id, isAuthenticated]);
 
   const handleToggleFavorite = async (e) => {
@@ -50,6 +52,7 @@ export default function ProductCard({ product }) {
       return;
     }
     if (checking) return;
+    document.dispatchEvent(new CustomEvent("trigger-bell"));
     setChecking(true);
     try {
       if (isFavorite) {
@@ -71,48 +74,80 @@ export default function ProductCard({ product }) {
   return (
     <Link
       to={`/products/${product.id}`}
-      className="group block bg-white border border-gray-200 rounded-xl overflow-hidden hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200"
+      className="group block bg-white border border-slate-200/60 rounded-2xl overflow-hidden hover:shadow-[0_16px_40px_rgba(0,0,0,0.035)] hover:-translate-y-1.5 transition-all duration-300 relative"
     >
-      <div className="relative aspect-square bg-gray-100 overflow-hidden">
+      {/* THUMBNAIL COVER ZONE - Apple Canvas Style */}
+      <div className="relative aspect-square bg-[#F8FAFC] overflow-hidden flex items-center justify-center p-4">
         <img
           src={resolveImageUrl(product.image) || "https://placehold.co/400x400?text=Bike"}
           alt={product.name}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+          className="max-w-full max-h-full object-contain group-hover:scale-105 transition-transform duration-500 ease-out"
         />
-        {outOfStock && (
-          <span className="absolute top-3 left-3 bg-ink text-white text-xs font-bold px-2 py-1 rounded">
-            Hết hàng
+
+        {/* OUT OF STOCK OR AVAILABILITY BADGES */}
+        {outOfStock ? (
+          <span className="absolute top-3 left-3 bg-[#0F172A]/90 backdrop-blur-xs text-white text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-lg border border-white/5 shadow-sm">
+            Tạm hết hàng
           </span>
-        )}
+        ) : product.quantity <= 3 ? (
+          <span className="absolute top-3 left-3 bg-rose-500 text-white text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-lg shadow-sm animate-pulse">
+            Sắp hết hàng
+          </span>
+        ) : null}
+
+        {/* BRAND INSIGNIA BADGE */}
         {product.brandName && (
-          <span className="absolute top-3 right-3 bg-white/90 text-ink text-xs font-semibold px-2 py-1 rounded">
+          <span className="absolute top-3 right-3 bg-white/85 backdrop-blur-xs border border-slate-200/50 text-[#0F172A] text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-lg shadow-2xs">
             {product.brandName}
           </span>
         )}
-        <button
+
+        {/* INTERACTIVE HEART BUTTON - Physics Bounce Effect */}
+        <motion.button
+          whileTap={{ scale: 0.8 }}
           onClick={handleToggleFavorite}
           aria-label="Yêu thích"
-          className={`absolute bottom-3 right-3 w-9 h-9 rounded-full flex items-center justify-center shadow-md transition-transform group-hover:scale-100 ${
-            isFavorite ? "bg-ember text-white" : "bg-white/90 text-steel hover:text-ember"
+          className={`absolute bottom-3 right-3 w-8.5 h-8.5 rounded-full flex items-center justify-center shadow-md transition-all duration-300 z-10 ${
+            isFavorite 
+              ? "bg-rose-500 text-white border-rose-500 shadow-rose-500/20" 
+              : "bg-white/90 text-slate-400 hover:text-rose-500 border border-slate-100 hover:bg-white"
           }`}
         >
-          <Heart size={17} fill={isFavorite ? "currentColor" : "none"} />
-        </button>
+          <Heart size={15} className="transition-transform" fill={isFavorite ? "currentColor" : "none"} />
+        </motion.button>
       </div>
-      <div className="p-4">
-        <p className="text-xs uppercase tracking-wide text-steel font-semibold mb-1">
+
+      {/* TEXT DATA SPECIFICATION */}
+      <div className="p-4 space-y-1.5">
+        <p className="text-[10px] uppercase tracking-widest text-slate-400 font-extrabold">
           {product.categoryName}
         </p>
-        <h3 className="font-semibold text-ink line-clamp-2 min-h-[2.75rem] group-hover:text-ember transition-colors">
+        
+        <h3 className="font-bold text-[#0F172A] text-xs leading-snug line-clamp-2 min-h-[2.5rem] group-hover:text-blue-600 transition-colors">
           {product.name}
         </h3>
-        <div className="flex items-center gap-1 mt-2 text-sm text-amber-500">
-          {"★".repeat(Math.round(product.averageRating || 0))}
-          {"☆".repeat(5 - Math.round(product.averageRating || 0))}
-          <span className="text-steel ml-1">({product.reviewCount || 0})</span>
+
+        {/* RATING STARS AND REVIEWS SYSTEM */}
+        <div className="flex items-center gap-1 text-[11px] text-amber-500 font-semibold">
+          <div className="flex text-amber-400 gap-0.5">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <Star 
+                key={i} 
+                className={`w-3 h-3 ${i < Math.round(product.averageRating || 0) ? "fill-amber-400 text-amber-400" : "text-slate-200"}`} 
+              />
+            ))}
+          </div>
+          <span className="text-slate-400 text-[10px] font-bold ml-1">({product.reviewCount || 0})</span>
         </div>
-        <div className="mt-3 flex items-center justify-between">
-          <span className="text-lg font-bold text-ember">{formatVND(product.price)}</span>
+
+        {/* PRICING AND ACTION ZONE */}
+        <div className="pt-2 border-t border-slate-50 flex items-center justify-between">
+          <span className="text-base font-black text-[#0F172A] tracking-tight">
+            {formatVND(product.price)}
+          </span>
+          <div className="w-7 h-7 rounded-lg bg-slate-50 group-hover:bg-blue-600 text-slate-400 group-hover:text-white flex items-center justify-center transition-all duration-300 border border-slate-200/40 group-hover:border-blue-600">
+            <ShoppingBag className="w-3.5 h-3.5" />
+          </div>
         </div>
       </div>
     </Link>

@@ -5,6 +5,7 @@ import com.example.bike_shop.security.UserDetailsServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
@@ -63,46 +64,49 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                .csrf(AbstractHttpConfigurer::disable)
-                .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**").permitAll()
-                        .requestMatchers("/uploads/**").permitAll()
-                        .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/chat").permitAll()
-                        .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/contact").permitAll()
-                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/posts/admin/all").hasRole("ADMIN")
-                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/posts/**", "/api/posts").permitAll()
-                        .requestMatchers(org.springframework.http.HttpMethod.GET,
-                                "/api/products/**", "/api/categories/**", "/api/brands/**",
-                                "/api/reviews/product/**", "/api/reviews/latest").permitAll()
-                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                        .requestMatchers("/api/upload/**").hasRole("ADMIN")
-                        .requestMatchers(org.springframework.http.HttpMethod.PUT, "/api/orders/*/status").hasAnyRole("ADMIN", "STAFF")
-                        .requestMatchers("/api/orders/**").authenticated()
-                        .requestMatchers("/api/cart/**").authenticated()
-                        .requestMatchers(org.springframework.http.HttpMethod.PUT, "/api/reviews/*/reply").hasRole("ADMIN")
-                        .requestMatchers("/api/reviews/admin/**").hasRole("ADMIN")
-                        .requestMatchers("/api/reviews/**").authenticated()
-                        .requestMatchers("/api/favorite/**").authenticated()
-                        .requestMatchers("/api/notification/**").authenticated()
-                        .requestMatchers("/api/users/me").authenticated()
-                        .requestMatchers("/api/users/**").hasRole("ADMIN")
-                        .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/products/**").hasRole("ADMIN")
-                        .requestMatchers(org.springframework.http.HttpMethod.PUT, "/api/products/**").hasRole("ADMIN")
-                        .requestMatchers(org.springframework.http.HttpMethod.DELETE, "/api/products/**").hasRole("ADMIN")
-                        .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/categories/**").hasRole("ADMIN")
-                        .requestMatchers(org.springframework.http.HttpMethod.PUT, "/api/categories/**").hasRole("ADMIN")
-                        .requestMatchers(org.springframework.http.HttpMethod.DELETE, "/api/categories/**").hasRole("ADMIN")
-                        .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/brands/**").hasRole("ADMIN")
-                        .requestMatchers(org.springframework.http.HttpMethod.PUT, "/api/brands/**").hasRole("ADMIN")
-                        .requestMatchers(org.springframework.http.HttpMethod.DELETE, "/api/brands/**").hasRole("ADMIN")
-                        .requestMatchers("/api/posts/**").hasRole("ADMIN")
-                        .requestMatchers("/api/contact/**").hasRole("ADMIN")
-                        .anyRequest().authenticated()
-                )
-                .authenticationProvider(authenticationProvider())
-                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+            .csrf(AbstractHttpConfigurer::disable)
+            .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .authorizeHttpRequests(auth -> auth
+                // 1. CÔNG KHAI (Không cần đăng nhập)
+                .requestMatchers("/api/auth/**").permitAll()
+                .requestMatchers("/uploads/**").permitAll()
+                .requestMatchers("/api/banners/**").permitAll() // Đã mở quyền cho Banners
+                .requestMatchers(HttpMethod.POST, "/api/chat", "/api/contact").permitAll()
+                
+                // 2. DỮ LIỆU CÔNG KHAI CỦA SẢN PHẨM/BÀI VIẾT
+                .requestMatchers(HttpMethod.GET, "/api/posts/**", "/api/posts").permitAll()
+                .requestMatchers(HttpMethod.GET, 
+                        "/api/products/**", "/api/categories/**", "/api/brands/**",
+                        "/api/reviews/product/**", "/api/reviews/latest").permitAll()
+                
+                // 3. UPLOAD ẢNH (Đã mở cho người dùng đã đăng nhập để gửi Review)
+                .requestMatchers("/api/upload/**").authenticated() 
+
+                // 4. QUYỀN NGƯỜI DÙNG ĐÃ ĐĂNG NHẬP
+                .requestMatchers("/api/orders/**").authenticated()
+                .requestMatchers("/api/cart/**").authenticated()
+                .requestMatchers("/api/reviews/**").authenticated()
+                .requestMatchers("/api/favorite/**").authenticated()
+                .requestMatchers("/api/notification/**").authenticated()
+                .requestMatchers("/api/users/me").authenticated()
+
+                // 5. QUYỀN ADMIN (Giữ nguyên bảo mật cao)
+                .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                .requestMatchers("/api/reviews/admin/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.PUT, "/api/reviews/*/reply").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.PUT, "/api/orders/*/status").hasAnyRole("ADMIN", "STAFF")
+                .requestMatchers("/api/users/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.POST, "/api/products/**", "/api/categories/**", "/api/brands/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.PUT, "/api/products/**", "/api/categories/**", "/api/brands/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.DELETE, "/api/products/**", "/api/categories/**", "/api/brands/**").hasRole("ADMIN")
+                .requestMatchers("/api/posts/**").hasRole("ADMIN")
+                .requestMatchers("/api/contact/**").hasRole("ADMIN")
+                
+                .anyRequest().authenticated()
+            )
+            .authenticationProvider(authenticationProvider())
+            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
