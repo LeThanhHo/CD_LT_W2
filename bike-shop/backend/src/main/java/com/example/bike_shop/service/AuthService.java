@@ -5,4 +5,6 @@ import com.example.bike_shop.dto.AuthDTO;
 public interface AuthService {
     AuthDTO.AuthResponse register(AuthDTO.RegisterRequest request);
     AuthDTO.AuthResponse login(AuthDTO.LoginRequest request);
+    void forgotPassword(String email);
+    void resetPassword(String token, String newPassword);
 }

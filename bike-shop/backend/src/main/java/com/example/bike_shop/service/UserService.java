@@ -10,4 +10,5 @@ public interface UserService {
     UserDTO updateUser(Long id, UserDTO dto);
     void deleteUser(Long id);
     UserDTO getCurrentUser(String username);
+    void changePassword(Long userId, String oldPassword, String newPassword);
 }

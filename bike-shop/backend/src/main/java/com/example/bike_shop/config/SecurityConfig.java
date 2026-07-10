@@ -68,35 +68,35 @@ public class SecurityConfig {
             .csrf(AbstractHttpConfigurer::disable)
             .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-                // 1. CÔNG KHAI (Không cần đăng nhập)
+                // 1. CÔNG KHAI
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/uploads/**").permitAll()
-                .requestMatchers("/api/banners/**").permitAll() // Đã mở quyền cho Banners
+                .requestMatchers("/api/banners/**").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/chat", "/api/contact").permitAll()
-                
-                // 2. DỮ LIỆU CÔNG KHAI CỦA SẢN PHẨM/BÀI VIẾT
+
+                // 2. DỮ LIỆU CÔNG KHAI (Sản phẩm, tin tức)
                 .requestMatchers(HttpMethod.GET, "/api/posts/**", "/api/posts").permitAll()
                 .requestMatchers(HttpMethod.GET, 
                         "/api/products/**", "/api/categories/**", "/api/brands/**",
                         "/api/reviews/product/**", "/api/reviews/latest").permitAll()
-                
-                // 3. UPLOAD ẢNH (Đã mở cho người dùng đã đăng nhập để gửi Review)
-                .requestMatchers("/api/upload/**").authenticated() 
 
-                // 4. QUYỀN NGƯỜI DÙNG ĐÃ ĐĂNG NHẬP
+                // 3. TÀI KHOẢN CÁ NHÂN (User tự cập nhật chính mình)
+                .requestMatchers(HttpMethod.PUT, "/api/users/me").authenticated()
+            .requestMatchers("/api/users/me", "/api/users/change-password").authenticated()
+                // 4. CÁC API YÊU CẦU ĐĂNG NHẬP
                 .requestMatchers("/api/orders/**").authenticated()
                 .requestMatchers("/api/cart/**").authenticated()
                 .requestMatchers("/api/reviews/**").authenticated()
                 .requestMatchers("/api/favorite/**").authenticated()
                 .requestMatchers("/api/notification/**").authenticated()
-                .requestMatchers("/api/users/me").authenticated()
+                .requestMatchers("/api/upload/**").authenticated()
 
-                // 5. QUYỀN ADMIN (Giữ nguyên bảo mật cao)
+                // 5. QUYỀN ADMIN (Giữ bảo mật cao)
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
                 .requestMatchers("/api/reviews/admin/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.PUT, "/api/reviews/*/reply").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.PUT, "/api/orders/*/status").hasAnyRole("ADMIN", "STAFF")
-                .requestMatchers("/api/users/**").hasRole("ADMIN")
+                .requestMatchers("/api/users/**").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/products/**", "/api/categories/**", "/api/brands/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.PUT, "/api/products/**", "/api/categories/**", "/api/brands/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.DELETE, "/api/products/**", "/api/categories/**", "/api/brands/**").hasRole("ADMIN")

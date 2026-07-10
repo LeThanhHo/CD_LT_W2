@@ -99,9 +99,15 @@ export default function LoginPage() {
               disabled={loading}
               className="w-full h-10 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs uppercase tracking-wider rounded-xl transition-all duration-200 disabled:opacity-60 shadow-md shadow-blue-600/10 flex items-center justify-center gap-1.5"
             >
+               <div className="text-right -mt-2">
+        
+        </div>
               <LogIn className="w-4 h-4" />
               {loading ? "Đang xử lý dữ liệu..." : "Đăng nhập ngay"}
             </motion.button>
+              <Link to="/forgot-password" className="text-sm text-ember hover:underline">
+            Quên mật khẩu?
+          </Link>
           </div>
         </form>
 

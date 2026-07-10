@@ -140,6 +140,9 @@ export default function Header() {
                     <Link to="/favorites" className="flex items-center gap-2 px-4 py-2.5 text-gray-300 hover:text-white hover:bg-white/5 transition">
                       <Heart className="w-3.5 h-3.5 text-gray-400" /> Sản phẩm yêu thích
                     </Link>
+                    <Link to="/profile" className="flex items-center gap-2 px-4 py-2.5 text-gray-300 hover:text-white hover:bg-white/5 transition">
+                      <User className="w-3.5 h-3.5 text-gray-400" /> Hồ sơ cá nhân
+                    </Link>
                     {(user?.role === "ADMIN" || user?.role === "STAFF") && (
                       <Link to="/admin" className="flex items-center gap-2 px-4 py-2.5 text-blue-400 hover:text-white hover:bg-blue-600 transition border-t border-white/5 mt-1 pt-2">
                         <Shield className="w-3.5 h-3.5" /> Quản trị hệ thống

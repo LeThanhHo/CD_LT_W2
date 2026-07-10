@@ -40,7 +40,7 @@ const scrollRevealVariants = {
   visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "keyframe" } }
 };
 
-// 🎯 1. HERO SECTION - FULL SCREEN (100vh) WITH FLOATING & ZOOM EFFECS
+// 🎯 1. HERO SECTION - REFINED LUXURY LAYOUT (70vh, Perfect Image Display)
 function LuxuryHero({ banners, loadingBanners }) {
   const [index, setIndex] = useState(0);
 
@@ -51,91 +51,61 @@ function LuxuryHero({ banners, loadingBanners }) {
   }, [banners]);
 
   if (loadingBanners || banners.length === 0) {
-    return (
-      <div className="h-screen bg-[#0F172A] flex items-center justify-center text-white/30">
-        <Loader small />
-      </div>
-    );
+    return <div className="h-[70vh] bg-slate-100 flex items-center justify-center"><Loader small /></div>;
   }
 
   const currentSlide = banners[index];
 
   return (
-    <section className="relative w-full h-screen bg-[#0B0F19] flex items-center overflow-hidden select-none">
-      {/* Background Image Zoom Animation */}
-      <div className="absolute inset-0 w-full h-full z-0 overflow-hidden">
+    <section className="relative w-full h-[70vh] bg-slate-900 overflow-hidden select-none">
+      {/* Background Image - Đảm bảo hiển thị rõ ảnh */}
+      <div className="absolute inset-0 z-0">
         <motion.img
           key={index}
-          initial={{ opacity: 0, scale: 1.08 }}
-          animate={{ opacity: 0.45, scale: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 1.2, ease: "easeOut" }}
+          initial={{ opacity: 0, scale: 1.05 }}
+          animate={{ opacity: 0.8, scale: 1 }}
+          transition={{ duration: 1 }}
           src={resolveImageUrl(currentSlide.image)}
           alt={currentSlide.title}
           className="w-full h-full object-cover"
         />
-        <div className="absolute inset-0 bg-gradient-to-r from-[#0B0F19] via-[#0B0F19]/80 to-transparent" />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#0B0F19] via-transparent to-transparent" />
+        {/* Overlay giúp chữ nổi bật hơn nhưng không làm tối ảnh */}
+        <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/20 to-transparent" />
       </div>
 
-      <div className="absolute inset-0 opacity-[0.02] bg-[linear-gradient(to_right,#fff_1px,transparent_1px),linear-gradient(to_bottom,#fff_1px,transparent_1px)] bg-[size:4rem_4.rem] z-10 pointer-events-none" />
-
-      {/* Floating Content Core */}
-      <div className="max-w-7xl mx-auto px-6 md:px-8 w-full relative z-20">
+      <div className="max-w-7xl mx-auto px-6 md:px-8 h-full flex items-center relative z-10">
         <motion.div 
-          initial={{ opacity: 0, y: 40 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, ease: "easeOut" }}
-          className="max-w-3xl space-y-6"
+          initial={{ opacity: 0, x: -30 }}
+          animate={{ opacity: 1, x: 0 }}
+          className="max-w-lg space-y-4"
         >
-          <div className="inline-flex items-center gap-2 bg-white/5 border border-white/10 backdrop-blur-md px-3 py-1.5 rounded-full text-[10px] font-bold text-blue-500 uppercase tracking-widest">
-            <Sparkles className="w-3.5 h-3.5" /> High-Performance Machinery
-          </div>
-          
-          <h1 className="font-sans font-black text-5xl md:text-8xl text-white tracking-tighter leading-[0.9] uppercase">
+         
+          <h1 className="font-sans font-black text-4xl md:text-6xl text-white tracking-tight uppercase leading-[1.1]">
             {currentSlide.title}
           </h1>
+       
           
-          <p className="text-gray-400 text-sm md:text-base max-w-md font-medium leading-relaxed">
-            Khám phá những siêu phẩm xe đạp carbon nguyên khối được tối ưu khí động học, đồng hành cùng bạn trên mọi cung đường đua đỉnh cao.
-          </p>
-          
-          {currentSlide.link && (
-            <div className="pt-4 flex flex-wrap gap-4">
-              <Link
-                to={currentSlide.link}
-                className="inline-flex items-center gap-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs uppercase tracking-wider px-8 py-4 rounded-xl transition-all duration-300 shadow-xl shadow-blue-600/10 group active:scale-95"
-              >
-                Mua ngay
-                <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
-              </Link>
-              <Link
-                to="/products"
-                className="inline-flex items-center gap-2.5 bg-white/5 hover:bg-white/10 border border-white/10 text-white font-bold text-xs uppercase tracking-wider px-8 py-4 rounded-xl transition-all duration-300 backdrop-blur-xs active:scale-95"
-              >
-                Khám phá
-              </Link>
-            </div>
-          )}
+          <div className="pt-2 flex gap-3">
+            <Link to={currentSlide.link || "/products"} className="bg-white text-black font-black text-[11px] uppercase px-6 py-3 rounded-xl hover:bg-slate-100 transition shadow-lg">
+              Khám phá ngay
+            </Link>
+          </div>
         </motion.div>
       </div>
 
-      {/* Slide Navigation Bullets */}
-      {banners.length > 1 && (
-        <div className="absolute bottom-12 right-6 md:right-8 z-30 flex items-center gap-2.5">
-          {banners.map((_, i) => (
-            <button
-              key={i}
-              onClick={() => setIndex(i)}
-              className={`h-1 rounded-full transition-all duration-500 ${i === index ? "bg-blue-600 w-12" : "bg-white/20 w-4 hover:bg-white/40"}`}
-            />
-          ))}
-        </div>
-      )}
+      {/* Navigation Bullets (Positioned inside for better space utilization) */}
+      <div className="absolute bottom-6 left-6 md:left-8 z-20 flex gap-2">
+        {banners.map((_, i) => (
+          <button
+            key={i}
+            onClick={() => setIndex(i)}
+            className={`h-1.5 rounded-full transition-all ${i === index ? "bg-white w-8" : "bg-white/30 w-8 hover:bg-white/60"}`}
+          />
+        ))}
+      </div>
     </section>
   );
 }
-
 // 🎯 2. FLASH SALE SECTION WITH COUNTDOWN
 function FlashSaleSection({ products }) {
   const [timeLeft, setTimeLeft] = useState({ hours: 14, minutes: 32, seconds: 45 });
@@ -210,7 +180,6 @@ export default function HomePage() {
     const load = async () => {
       try {
         setLoading(true);
-        // GIỮ NGUYÊN HOÀN TOÀN LUỒNG PHỐI HỢP PHƯƠNG THỨC API GỐC CỦA HỒ
         const [f, b, n, c, p, t, bn] = await Promise.all([
           productService.getFeatured(),
           productService.getBestSellers(),
@@ -243,8 +212,7 @@ export default function HomePage() {
       {/* 🎯 SECTION 1: HERO CONTAINER (100vh) */}
       <LuxuryHero banners={banners} loadingBanners={loadingBanners} />
 
-      {/* 🎯 SECTION 2: FLASH SALE BLOCK */}
-      {!loading && <FlashSaleSection products={featured.slice(0, 1)} />}
+     
 
       {/* 🎯 SECTION 3: CATEGORIES DYNAMIC GRID */}
       <motion.section 
@@ -272,7 +240,7 @@ export default function HomePage() {
                 </div>
                 <p className="font-bold text-slate-800 text-sm group-hover:text-blue-600 transition-colors">{cat.name}</p>
                 <span className="inline-flex items-center gap-1 justify-center mt-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider bg-slate-50 border border-slate-100 px-2.5 py-1 rounded-xl group-hover:bg-blue-50 group-hover:text-blue-600 transition-colors w-max mx-auto">
-                  Explore Series <ChevronRight className="w-3 h-3" />
+                  Xem ngay <ChevronRight className="w-3 h-3" />
                 </span>
               </Link>
             ))}
